@@ -2,8 +2,61 @@
 <html>
 <head>
 	<title>页面</title>
+	<script src="client.socket.js"></script>
+	<style type="text/css">
+		#div1{ width: 100px;height: 100px;background: red; position: absolute;}
+		div{ width: 10px;height: 10px;background: green;position: absolute; }
+	</style>
+	<script>
+		window.onload = function(){
+			var btn = document.getElementById('btn');
+			var oDiv = document.getElementById("div1");
+			var socket = null; 
+			btn.onclick = function(){
+                socket = io.connect("http://localhost:2222");
+
+                socket.on("hill",function(data){      //客户端进行监听，发现服务器有数据，则返回
+                	alert(data);
+                	this.emit("thanks","waityou");		// 在客服端也发送数据
+                });
+                socket.on("new",function(data){      //客户端进行监听，发现服务器有数据，则返回
+                	alert(data);
+                });
+                socket.on('move', function(data) {
+					oDiv.style.left = data.left + 'px';
+					oDiv.style.top = data.top + 'px';
+				});
+			}
+		var iSpeedX = 0;
+		var iSpeedY = 0;
+		
+		oDiv.onmousedown = function(ev){
+			var oEvent = ev||event;
+			var disX = oEvent.clientX-oDiv.offsetLeft;
+			var disY = oEvent.clientY-oDiv.offsetTop;
+		document.onmousemove = function(ev){
+			var oEvent = ev||event;
+			var l = oEvent.clientX-disX;
+			var t = oEvent.clientY-disY;
+			oDiv.style.left = l+'px';
+			oDiv.style.top = t+'px';	//拖拽由一个个点组成，方向由两个点决定
+			socket.emit("move",{
+				left:oDiv.offsetLeft,
+				top:oDiv.offsetTop
+			});
+		
+			
+		}
+		document.onmouseup = function(){
+			document.onmousemove=document.onmouseup=null;
+		}
+		};
+		}
+	</script>
 </head>
 <body>
 		<h1>hello,欢迎来到主页面</h1>
+		<input id="btn" type="button" value="点击">
+		<div id="div1"></div>
 </body>
 </html>
